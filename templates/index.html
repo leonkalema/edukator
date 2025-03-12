@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn with Fun! - English to Luganda</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f9ff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4a90e2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #e3f2fd;
+        }
+        .audio-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .emoji {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Learn with Fun! 🎈</h1>
+        <form id="translateForm">
+            <textarea 
+                id="inputText" 
+                rows="4" 
+                placeholder="Type any academic concept here... (Example: 'What is photosynthesis?')"
+                required></textarea>
+            <button type="submit">Translate and Explain! 🎯</button>
+        </form>
+        
+        <div class="loading">
+            <p>🤔 Thinking...</p>
+        </div>
+
+        <div id="result" class="result" style="display: none;">
+            <p><span class="emoji">📝</span> <strong>Original:</strong> <span id="original"></span></p>
+            <p><span class="emoji">🎈</span> <strong>Simple Explanation:</strong> <span id="simplified"></span></p>
+            <p><span class="emoji">🗣️</span> <strong>In Luganda:</strong> <span id="translated"></span></p>
+            <div class="audio-container">
+                <p><span class="emoji">🔊</span> <strong>Listen:</strong></p>
+                <audio id="audio" controls></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('translateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.querySelector('.loading');
+            const result = document.getElementById('result');
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('text', document.getElementById('inputText').value);
+
+            try {
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                document.getElementById('original').textContent = data.original;
+                document.getElementById('simplified').textContent = data.simplified;
+                document.getElementById('translated').textContent = data.translated;
+                document.getElementById('audio').src = data.audio_url;
+                
+                result.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Sorry, something went wrong! Please try again.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
