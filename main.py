@@ -5,7 +5,7 @@ import requests
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from openai import OpenAI
+import openai
 import asyncio
 import time
 from dotenv import load_dotenv
@@ -13,8 +13,8 @@ from gtts import gTTS
 
 load_dotenv()
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize OpenAI
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # T2A API settings
 T2A_API_KEY = os.getenv("T2A_API_KEY")
@@ -39,30 +39,24 @@ async def simplify_and_translate(text: str) -> dict:
     """Simplify and translate text for children using OpenAI"""
     try:
         # Create a child-friendly explanation in English
-        response = await asyncio.get_event_loop().run_in_executor(
-            None,
-            lambda: client.chat.completions.create(
-                model="gpt-4-turbo-preview",
-                messages=[
-                    {"role": "system", "content": "You are an expert at explaining complex concepts to 5-year-old Ugandan children. Use simple words, cultural references they understand, and engaging examples. Focus on making learning easy and fun so children can grasp concepts easily."},
-                    {"role": "user", "content": f"Explain this concept in simple terms that a 5-year-old Ugandan child would understand: {text}"}
-                ]
-            )
+        response = await openai.ChatCompletion.acreate(
+            model="gpt-4-0125-preview",
+            messages=[
+                {"role": "system", "content": "You are an expert at explaining complex concepts to 5-year-old Ugandan children. Use simple words, cultural references they understand, and engaging examples. Focus on making learning easy and fun so children can grasp concepts easily."},
+                {"role": "user", "content": f"Explain this concept in simple terms that a 5-year-old Ugandan child would understand: {text}"}
+            ]
         )
-        simplified = response.choices[0].message.content.strip()
+        simplified = response.choices[0].message['content'].strip()
         
         # Translate to Luganda
-        response = await asyncio.get_event_loop().run_in_executor(
-            None,
-            lambda: client.chat.completions.create(
-                model="gpt-4-turbo-preview",
-                messages=[
-                    {"role": "system", "content": "You are a professional translator specializing in translating English to Luganda for children. Keep the translation simple and natural."},
-                    {"role": "user", "content": f"Translate this child-friendly explanation to Luganda: {simplified}"}
-                ]
-            )
+        response = await openai.ChatCompletion.acreate(
+            model="gpt-4-0125-preview",
+            messages=[
+                {"role": "system", "content": "You are a professional translator specializing in translating English to Luganda for children. Keep the translation simple and natural."},
+                {"role": "user", "content": f"Translate this child-friendly explanation to Luganda: {simplified}"}
+            ]
         )
-        translated = response.choices[0].message.content.strip()
+        translated = response.choices[0].message['content'].strip()
         
         return {
             "simplified": simplified,
